@@ -16,13 +16,13 @@ driver = webdriver.Chrome(service=servis, options=opsi)
 produk_list = []
 
 # Buka halaman target
-for page in range(1, 21):
+for page in range(51, 61):
   print(f"\n📄 Sedang membuka halaman {page}")
   target_url = f'https://www.tokopedia.com/search?page={page}&q=elektronik'
   driver.set_window_size(1300, 800)
   driver.get(target_url)
 
-  try:  
+  try:
     WebDriverWait(driver, 10).until(
       EC.presence_of_element_located((By.CSS_SELECTOR, 'div.css-5wh65g'))
     )
@@ -78,8 +78,9 @@ for page in range(1, 21):
     price_el = soup_detail.find('div', class_='price')
     original_price_el = soup_detail.find('div', class_='original-price')
     discount_el = soup_detail.find('div', class_='css-1c4ggdd')
-    stock_el = soup_detail.find('p', class_='css-101ywxy-unf-heading e1qvo2ff8')
-    delivery_el = soup_detail.find('h2', class_='css-g78l6p-unf-heading e1qvo2ff2')
+    stock_el = soup_detail.find('p', class_='css-170i345-unf-heading e1qvo2ff8')
+    delivery_el = soup_detail.find('h2', class_='css-793nib-unf-heading e1qvo2ff2')
+    breadcrumb_nav = soup_detail.find('nav', {'aria-label': 'Breadcrumb'})
 
     product_title = title_el.text.strip() if title_el else "N/A"
     price = price_el.text.strip() if price_el else "N/A"
@@ -87,6 +88,14 @@ for page in range(1, 21):
     amount_discount = discount_el.text.split(' ')[1] if discount_el else "N/A"
     stock = stock_el.text.strip() if stock_el else "N/A"
     delivery = delivery_el.text.strip() if delivery_el else "N/A"
+    breadcrumb_items = breadcrumb_nav.find_all('li') if breadcrumb_nav else []
+
+    # Pastikan breadcrumb cukup panjang
+    if len(breadcrumb_items) >= 2:
+        sub_category_el = breadcrumb_items[-2] 
+        sub_category_text = sub_category_el.get_text(strip=True)
+    else:
+        sub_category_text = "N/A"
 
     produk_data = {
       "Title": product_title,
@@ -94,7 +103,8 @@ for page in range(1, 21):
       "Original Price": original_price,
       "Discount": amount_discount,
       "Stock": stock,
-      "Delivery": delivery
+      "Delivery": delivery,
+      "Subcategory": sub_category_text
     }
 
     if product_title == "N/A":

@@ -11,6 +11,7 @@ def preprocess_price_columns(file_path, output_path):
   df['original price'] = df['original price'].fillna('N/A').astype(str).str.strip()
   df['discount'] = df['discount'].fillna('N/A').astype(str).str.strip()
   df['price'] = df['price'].astype(str).str.strip()
+  df['stock'] = df['stock'].fillna('').astype(str)
   
   # Hilangkan "Rp" dan titik pada kolom price dan original price
   df['price'] = df['price'].str.replace('Rp', '', case=False, regex=False).str.replace('.', '', regex=False).str.strip()
