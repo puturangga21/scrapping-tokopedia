@@ -6,6 +6,21 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 import time
 import pandas as pd
+from pymongo import MongoClient
+
+# Inisialisasi koneksi MongoDB
+MONGO_URI = 'mongodb+srv://puturangga21:abcd@cluster.67v0swb.mongodb.net/'
+DATABASE_NAME = 'big_data'
+COLLECTION_NAME = 'dataset_raw'
+
+try:
+  client = MongoClient(MONGO_URI)
+  db = client[DATABASE_NAME]
+  collection = db[COLLECTION_NAME]
+  print(f"✅ Terkoneksi ke MongoDB: Database '{DATABASE_NAME}', Collection '{COLLECTION_NAME}'")
+except Exception as e:
+  print(f"[ERROR] Gagal terkoneksi ke MongoDB: {e}")
+  exit()
 
 # Konfigurasi driver
 opsi = webdriver.ChromeOptions()
@@ -16,7 +31,7 @@ driver = webdriver.Chrome(service=servis, options=opsi)
 produk_list = []
 
 # Buka halaman target
-for page in range(51, 61):
+for page in range(51, 52):
   print(f"\n📄 Sedang membuka halaman {page}")
   target_url = f'https://www.tokopedia.com/search?page={page}&q=elektronik'
   driver.set_window_size(1300, 800)
@@ -42,8 +57,6 @@ for page in range(51, 61):
   products = soup.find_all('div', class_='css-5wh65g')
 
   for product in products:
-    # product_link = product.find('a', href=True)['href']
-    
     a_tag = product.find('a', href=True)
     if not a_tag:
       print("[WARNING] Produk tidak memiliki tag <a>, dilewati.")
@@ -112,6 +125,13 @@ for page in range(51, 61):
       continue 
 
     produk_list.append(produk_data)
+
+    # Simpan ke MongoDB
+    try:
+      collection.insert_one(produk_data)
+      print("✅ Data produk berhasil disimpan ke MongoDB.")
+    except Exception as e:
+      print(f"[ERROR] Gagal menyimpan data ke MongoDB: {e}")
 
     print("✅ Produk ke -", len(produk_list), "berhasil disimpan.")
     print("=====================================")
